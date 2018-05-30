@@ -117,7 +117,7 @@ function nextQuestion() {
 		let selection = document.createElement("DIV");
 		let txt = document.createTextNode("Restart");
 		selection.appendChild(txt);
-		selection.setAttribute("onClick",'location.href="main.html"');
+		selection.setAttribute("onClick",'location.href="index.html"');
 		selection.setAttribute("class","option");
 		selection.setAttribute("id","restart");
 		document.getElementById("answers").appendChild(selection);	
