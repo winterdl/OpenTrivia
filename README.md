@@ -1,4 +1,4 @@
 # OpenTrivia
-Small quiz game demo using Javascript and Opentdb API
-
-Doesnt do anything yet! Working on multiplayer implementation in the future.
+Small multiplayer quiz demo using express and socket.io.
+### Current Status:
+Pairs two players together and allows player 1 to choice the game options.
