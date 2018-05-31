@@ -14,6 +14,8 @@
     <div id="header">Open Trivia!</div>
     <div class="divider"></div>
     <div id="content">
+
+        <div id="waiting" class="modifiers">Waiting for players...</div>
         <div id="config" class="modifiers">
 
             <form>
@@ -43,13 +45,14 @@
                 
         
         </div>
-        <div id="start" class="option" onClick="setupGame()">Start</div>
+        <div id="start" class="option" onClick="gameConfig()">Start</div>
         <div id="playArea">
             <div id="q"></div>
             <div id="answers"></div>
         </div>
     </div>
-    <script src="QuizGame.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
 
 </body>
 
