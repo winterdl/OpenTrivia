@@ -72,21 +72,21 @@ sock.on("finish", function(data){
     selection.setAttribute("class","modifiers");
     document.getElementById("answers").appendChild(selection);
 
-    let selection = document.createElement("DIV");
-    let txt = document.createTextNode("Main Menu");
-    selection.appendChild(txt);
-    selection.setAttribute("onClick",'location.href="index.html"');
-    selection.setAttribute("class","option");
-    selection.setAttribute("id","restart");
-    document.getElementById("answers").appendChild(selection); 
+    let selection2 = document.createElement("DIV");
+    let txt2 = document.createTextNode("Main Menu");
+    selection2.appendChild(txt2);
+    selection2.setAttribute("onClick",'location.href="index.html"');
+    selection2.setAttribute("class","option");
+    selection2.setAttribute("id","restart");
+    document.getElementById("answers").appendChild(selection2); 
 
-    let selection = document.createElement("DIV");
-    let txt = document.createTextNode("Join Again");
-    selection.appendChild(txt);
-    selection.setAttribute("onClick",'location.href="join.html"');
-    selection.setAttribute("class","option");
-    selection.setAttribute("id","restart");
-    document.getElementById("answers").appendChild(selection); 
+    let selection3 = document.createElement("DIV");
+    let txt3 = document.createTextNode("Join Again");
+    selection3.appendChild(txt3);
+    selection3.setAttribute("onClick",'location.href="join.html"');
+    selection3.setAttribute("class","option");
+    selection3.setAttribute("id","restart");
+    document.getElementById("answers").appendChild(selection3); 
 });
 
 
