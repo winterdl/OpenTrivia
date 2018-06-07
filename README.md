@@ -20,3 +20,4 @@ Use this command if you are modifying the server for easier debugging. (Requires
 npm run dev
 ```
 * Open the brower and navigate to http://localhost:8080/index.html for the main screen and point all other devices to http://your_internal_ip/join.html and follow onscreen instructions.
+
