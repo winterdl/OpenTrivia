@@ -124,6 +124,4 @@ server.on("error", function(err) {
 });
 
 
-server.listen(8080, function() {
-    console.log("Server listening on port 8080")
-});
+server.listen(process.env.PORT || 5000);
