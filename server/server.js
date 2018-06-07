@@ -13,27 +13,106 @@ app.use(express.static(clientPath));
 const server = http.createServer(app);
 const io = socketio(server);
 
-let waitingPlayer = null;
-let game = new triviaGame();
-let url = null;
-let p2 = null;
+let clients = {};
+let rooms = {};
+let hosts = {};
+let userRoom = {};
+
+
 io.on('connection', function(sock){
-    //p2 = sock;
-    console.log("Connection established: " + sock.id);
-    if(waitingPlayer) { 
-        game.fetchCategories(waitingPlayer);
-        waitingPlayer.emit("choice", "run");
+    
+    sock.on("room", function(info){
         
-        waitingPlayer.on("settings", function(options){
-           sock.emit("clear", "msg");
-           game.setupGame(waitingPlayer, sock, options)           
-        });
+       if(!rooms.hasOwnProperty(info[0])) {
+            sock.join(info[0]);
+            clients[sock.id] = info[1];
+            rooms[info[0]] = true;
+            hosts[info[0]] = sock.id;
+            userRoom[sock.id] = info[0];
 
-        waitingPlayer = null;
-    } else {
-        waitingPlayer = sock;
-    }
+            console.log(clients[sock.id] + " joined " + info[0]);
+        } else if(rooms.hasOwnProperty(info[0])) {
+            if(rooms[info[0]] == true) {
+                sock.join(info[0]);
+                clients[sock.id] = info[1];
+                rooms[info[0]] = true;
+                userRoom[sock.id] = info[0];
 
+                io.to(hosts[info[0]]).emit("joined", [sock.id, info[1]]);
+                
+                console.log(clients[sock.id] + " joined " + info[0]);                
+            } else {
+                io.emit("false", "cannot connect");
+                console.log("failed connection");
+            }
+        } 
+
+    });
+
+    sock.on("noOfPlayers", function(data){
+
+        let no = io.sockets.adapter.rooms[data].length;
+        io.in(data).emit("players", no);
+    
+    }); 
+
+    sock.on("close", function(room) {
+        rooms[room] = false;
+    });
+
+    sock.on("question", function(data){
+        io.in(data[1]).emit("question", data[0]);
+    });
+
+    sock.on("answer", function(data){
+
+        let r = userRoom[sock.id];
+        let h = hosts[r];
+
+        io.to(h).emit("ans", [sock.id, data]);
+
+    });
+
+    sock.on("correct", function(data){
+
+        io.to(data[0]).emit("correct", data);
+
+    });
+
+    sock.on("incorrect", function(data){
+
+        io.to(data[0]).emit("incorrect", data);
+
+    });
+
+    sock.on("end", function(data){
+        let y = Object.keys(data);
+        y.forEach(function(prop) {
+            io.to(prop).emit("finish", data[prop]);
+		});
+
+    });
+
+    sock.on("disconnect", function(data) {
+        let r = userRoom[sock.id];
+        let h = hosts[r];
+        
+        if(clients.hasOwnProperty(sock.id)) {
+            console.log(clients[sock.id] + " disconnected");
+            io.to(h).emit("dc", sock.id);
+        }
+
+        if(sock.id == h) {
+            console.log("Host " + clients[sock.id] + " Disconnected");
+            io.in(userRoom[sock.id]).emit("hostDisconnect", "Host has disconnected");
+
+        }
+
+        delete userRoom[sock.id];
+        delete clients[sock.id];
+        delete rooms[r];
+        delete hosts[r];
+    });
 
     
 });

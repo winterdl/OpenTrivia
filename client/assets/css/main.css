@@ -18,10 +18,10 @@ html, body {
 }
 
 #config {
-    height: 70px;
+    height: 100px;
 }
         
-#start{
+#start, #begin{
     text-align: center;
     font-size:28px;
     margin-top: 5%;
@@ -96,12 +96,25 @@ html, body {
     padding:2px;
     padding-left:10px;
     border: 2px solid white;
-    cursor:pointer;
     background-color:#3399FF;
     border-radius: 3px;
     text-align: center;
 }
-      
+  
+#lobby {
+    
+    height:42px;
+    margin-left:10%;
+    margin-right:10%;
+    margin-top: 1%;
+    width:80%;
+    font-size:18px;
+    color:#FFFFFF;
+    padding:2px;
+    padding-left:10px;
+    text-align: center;
+    
+}
 
 .correct{
     width:50%;

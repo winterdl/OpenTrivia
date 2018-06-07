@@ -1,55 +1,99 @@
-
-/*function writeEvent(text) {
-    let chatbox = document.getElementById("events");
-    let listEl = document.createElement("li");
-    listEl.innerHTML = text;
-    chatbox.appendChild(listEl);
-} */
-
 const sock = io();
-//sock.on('message', writeEvent);
 
-sock.on("choice", function(string){
-    console.log("YES");
-    document.getElementById("config").style.display = ""; 
-    document.getElementById("start").style.display = "";
-    document.getElementById("waiting").style.display = "none";
-
-});
-
-sock.on("clear", function(clear){
-    console.log("HI");
-    document.getElementById("waiting").style.display = "none";    
-
-});
-
-function sendMessage(event) {
-    event.preventDefault();
-    let msg = document.getElementById("chat").value;
-    
-    sock.emit('message', msg);
+function shuffleArray(array) {
+	
+	for(let i = array.length - 1; i > 0; i--) {
+		
+		const j = Math.floor(Math.random() * (i + 1));
+		[array[i], array[j]] = [array[j], array[i]];
+		
+	}
+	return array;
+	
 }
-let availCat = null;
+
+//Global Variables
+var obj = null;
+let question = null;
+let score = 0;
+let questionNo = 0;
+let globcrc = "";
+let room = null;
+
+sock.on("msg", function(msg) {
+    console.log(msg);
+});
+
+sock.on("hostDisconnect", function(msg) {
+    document.getElementById("q").innerHTML = "";
+    document.getElementById("answers").innerHTML = "";
+    document.getElementById("disconnect").style.display =""; 
+    let selection = document.createElement("DIV");
+    let txt = document.createTextNode("Restart");
+    selection.appendChild(txt);
+    selection.setAttribute("onClick",'location.href="join.html"');
+    selection.setAttribute("class","option");
+    selection.setAttribute("id","restart");
+    document.getElementById("answers").appendChild(selection);  
+
+});
+
+sock.on("question", function(data){
+    question = data;
+    nextQuestion();
+    console.log(question.question);
+});
+
+sock.on("correct", function(data){
+    let selection = document.createElement("DIV");
+    let txt = document.createTextNode("Correct!" + " Your Current Score is: " + data[1]);
+    selection.appendChild(txt);
+    selection.setAttribute("class","correct");
+    document.getElementById("answers").appendChild(selection);
+});
+
+sock.on("incorrect", function(data){
+    let selection = document.createElement("DIV");
+    let txt = document.createTextNode("Incorrect!" + " The correct Answer was: " + data[2] +" Your Current Score is: " + data[1]);
+    selection.appendChild(txt);
+    selection.setAttribute("class","incorrect");
+    document.getElementById("answers").appendChild(selection);   
+});
+
+sock.on("finish", function(data){
+    console.log(data);
+
+    document.getElementById("answers").innerHTML = "";
+    document.getElementById("q").innerHTML = "";
+
+    let selection = document.createElement("DIV");
+    let txt = document.createTextNode("Your Score: " + data);
+    selection.appendChild(txt);
+    selection.setAttribute("class","modifiers");
+    document.getElementById("answers").appendChild(selection);
+
+    let selection = document.createElement("DIV");
+    let txt = document.createTextNode("Main Menu");
+    selection.appendChild(txt);
+    selection.setAttribute("onClick",'location.href="index.html"');
+    selection.setAttribute("class","option");
+    selection.setAttribute("id","restart");
+    document.getElementById("answers").appendChild(selection); 
+
+    let selection = document.createElement("DIV");
+    let txt = document.createTextNode("Join Again");
+    selection.appendChild(txt);
+    selection.setAttribute("onClick",'location.href="join.html"');
+    selection.setAttribute("class","option");
+    selection.setAttribute("id","restart");
+    document.getElementById("answers").appendChild(selection); 
+});
+
+
 function load() {
-    document.getElementById("config").style.display = "none"; 
-    document.getElementById("start").style.display = "none";
-
-    sock.on("cat", function(categories){
-        availCat = categories;
-        for(let i = 0; i < availCat.length; i++) {
-            let catID = availCat[i].id;
-            let catName = availCat[i].name;
-            
-            let opt = document.createElement("OPTION");
-            opt.text = catName;
-            opt.value = catID;
-            document.getElementById("cat").appendChild(opt);
-            
-        }
-
-    });
-
-
+    
+    document.getElementById("waiting").style.display ="none";
+    document.getElementById("disconnect").style.display ="none";
 
 
 }
@@ -58,19 +102,56 @@ document.addEventListener("DOMContentLoaded", function() {
     load();
 });
 
+function joinRoom() {
 
-
-function gameConfig() {
-
-	let noQ = (document.getElementById("noq").value).toString();
-	let cat = (document.getElementById("cat").value).toString();
-    let dif = (document.getElementById("dif").value).toString();
-    document.getElementById("config").style.display = "none"; 
-    document.getElementById("start").style.display = "none";
-    sock.emit("settings", [noQ, cat, dif]);
-    
+    let room = (document.getElementById("room").value).toString();
+    let name = (document.getElementById("name").value).toString();
+    sock.emit("room", [room, name]);
+    document.getElementById("config").style.display ="none";
+    document.getElementById("join").style.display ="none";
+    document.getElementById("waiting").style.display ="";
 
 
 }
 
+function nextQuestion(){
 
+    document.getElementById("waiting").style.display = "none";
+
+    document.getElementById("answers").innerHTML = "";
+    //sock.emit("question", [questions[0], room]);
+    
+    
+    let inc = question.incorrect_answers;
+    let crc = question.correct_answer;
+    globcrc = crc;
+    let options = inc.concat(crc);
+    shuffleArray(options);
+    questionNo = questionNo + 1;
+    document.getElementById("q").innerHTML = questionNo + ") " + question.question;
+
+    for(let i = 0; i < options.length; i++) {
+        let selection = document.createElement("DIV");
+        let txt = document.createTextNode(options[i]);
+        selection.appendChild(txt);
+        selection.setAttribute("value",options[i]);
+        selection.setAttribute("class","option");
+        selection.setAttribute("onClick","sendAnswer(this)");
+        document.getElementById("answers").appendChild(selection);
+    } 
+
+}
+
+function sendAnswer(ans) {
+    
+    let answer = ans.innerHTML;
+    sock.emit("answer",answer);
+
+    document.getElementById("answers").innerHTML = "";
+    let selection = document.createElement("DIV");
+    let txt = document.createTextNode("Waiting for other players to answer...");
+    selection.appendChild(txt);
+    selection.setAttribute("class","modifiers");
+    document.getElementById("answers").appendChild(selection);
+
+}

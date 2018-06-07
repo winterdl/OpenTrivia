@@ -16,6 +16,7 @@
     <div id="content">
 
         <div id="waiting" class="modifiers">Waiting for players...</div>
+        <div id="disconnect" class="modifiers">Host has disconnected.</div>
         <div id="config" class="modifiers">
 
             <form>
@@ -42,17 +43,23 @@
                         <option value="hard">Hard</option>
                 </select>
             </form>
+
+            <form>
+                Room Code: <input type="text" id="room" value="room" style="width:250px;">
+            </form>
                 
-        
+            
         </div>
         <div id="start" class="option" onClick="gameConfig()">Start</div>
+        <div id="begin" class="option" onClick="beginGame()">Begin</div>
+        <div id="lobby">Players:</div>
         <div id="playArea">
             <div id="q"></div>
             <div id="answers"></div>
         </div>
     </div>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="client.js"></script>
+    <script src="mainScreen.js"></script>
 
 </body>
 
