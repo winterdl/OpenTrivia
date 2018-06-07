@@ -133,7 +133,7 @@ function gameConfig() {
 	questions = obj.results;
 
    // console.log(questions[0].question);
-    document.getElementById("waiting").innerHTML = "Room Code: " + room + " <br> Go to http://192.168.1.7:8080/join";
+    document.getElementById("waiting").innerHTML = "Room Code: " + room + " <br> Go to https://alingam-quizdemo.herokuapp.com/join.html";
     document.getElementById("waiting").style.display ="";
 	document.getElementById("begin").style.display ="";
 	document.getElementById("lobby").style.display = "";
