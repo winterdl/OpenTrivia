@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Open Trivia</title>
+    <meta name="viewport" content="initial-scale=0.75,maximum-scale=0.75,user-scalable=no"/> 
+    <link id="css" href="assets/css/main.css" rel="stylesheet" type="text/css"/>
+    <link href="https://fonts.googleapis.com/css?family=Raleway:800|Roboto:500" rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="header">Open Trivia!</div>
+    <div class="divider"></div>
+    <div id="content">
+
+        <div id="waiting" class="modifiers">Waiting for players...</div>
+        <div id="disconnect" class="modifiers">Host has disconnected.</div>
+        <div id="config" class="modifiers">
+
+            <form>
+                Questions:
+                <select id="noq" style="width:250px;">
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                </select>
+            </form>            
+            <form>
+                Category: 
+                <select id="cat" style="width:250px;">
+                    <option value="">Any</option>
+                </select>
+            </form>
+                
+            <form>
+                Difficulty:
+                <select id="dif" style="width:250px;">
+                        <option value="">Any</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                </select>
+            </form>
+
+            <form>
+                Room Code: <input type="text" id="room" value="room" style="width:250px;">
+            </form>
+                
+            
+        </div>
+        <div id="start" class="option" onClick="gameConfig()">Start</div>
+        <div id="begin" class="option" onClick="beginGame()">Begin</div>
+        <div id="lobby">Players:</div>
+        <div id="playArea">
+            <div id="q"></div>
+            <div id="answers"></div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="mainScreen.js"></script>
+
+</body>
+
+
+<footer>
+        <a href="index.html">Open Trivia!</a> </br>
+        Created By: Anushan Lingam </br>
+        Demo Quiz game using Javascript and <a href="https://opentdb.com/">Opentdb</a> API.
+        </br> Source available at <a href="https://github.com/AnushanLingam/OpenTrivia">Github</a>
+</footer>
+
+</html>
