@@ -38,29 +38,6 @@ io.on('connection', function(sock){
     
     sock.on("room", function(info){
         
-     /*  if(!rooms.hasOwnProperty(info[0])) {
-            sock.join(info[0]);
-            clients[sock.id] = info[1];
-            rooms[info[0]] = true;
-            hosts[info[0]] = sock.id;
-            userRoom[sock.id] = info[0];
-
-            console.log(clients[sock.id] + " joined " + info[0]);
-        } else if(rooms.hasOwnProperty(info[0])) {
-            if(rooms[info[0]] == true) {
-                sock.join(info[0]);
-                clients[sock.id] = info[1];
-                rooms[info[0]] = true;
-                userRoom[sock.id] = info[0];
-
-                io.to(hosts[info[0]]).emit("joined", [sock.id, info[1]]);
-                
-                console.log(clients[sock.id] + " joined " + info[0]);                
-            } else {
-                io.emit("false", "cannot connect");
-                console.log("failed connection");
-            }
-        } */
         console.log(findRooms(info[0]));
         if(findRooms(info[0])) {
             if(rooms[info[0]] == true) {
