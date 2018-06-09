@@ -21,7 +21,9 @@ let roomAvail;
 
 io.on('connection', function(sock){
     
+    console.log(sock.id);
     sock.on("hostConnect", function(info){
+        console.log(typeof info);
         if(!findRooms(info[0])) {
             sock.join(info[0]);
             clients[sock.id] = info[1];
@@ -37,8 +39,7 @@ io.on('connection', function(sock){
     
     
     sock.on("room", function(info){
-        
-        console.log(findRooms(info[0]));
+          
         if(findRooms(info[0])) {
             if(rooms[info[0]] == true) {
                 sock.join(info[0]);
@@ -54,10 +55,38 @@ io.on('connection', function(sock){
                 console.log("failed connection");
             }
         } else {
-          console.log("Failed to connect: Room doesnt exist")
+            console.log(info[0]);
+            console.log("Failed to connect: Room doesnt exist")
         }
 
 
+    });
+
+    //Connection for Android App
+
+    sock.on("appRoom", function(data){
+        console.log(typeof data);
+        let info = data.split("/");
+        if(findRooms(info[0])) {
+            if(rooms[info[0]] == true) {
+                sock.join(info[0]);
+                clients[sock.id] = info[1];
+                rooms[info[0]] = true;
+                userRoom[sock.id] = info[0];
+    
+                io.to(hosts[info[0]]).emit("joined", [sock.id, info[1]]);
+                
+                console.log(clients[sock.id] + " joined " + info[0]);                
+            } else {
+                io.emit("false", "cannot connect");
+                console.log("failed connection");
+            }
+        } else {
+            console.log(info[0]);
+            console.log("Failed to connect: Room doesnt exist")
+        }
+
+        console.log(info[0] + " " + info[1]);
     });
 
     sock.on("checkRoom", function(data) {
