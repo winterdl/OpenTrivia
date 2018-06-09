@@ -12,6 +12,20 @@ function shuffleArray(array) {
 	
 }
 
+function qrRoom(param, element) {
+    let url = window.location.href;
+    if(url.indexOf("?") > -1) {
+        let query = url.split("?");
+        let rel = query[1];
+        console.log(rel)
+        let arg = rel.split("=");
+        if(arg[0] == param) {
+            console.log(arg[1]);
+            document.getElementById(element).setAttribute("value", arg[1].toString());
+        }
+    } else return;
+}
+
 //Global Variables
 var obj = null;
 let question = null;
@@ -19,9 +33,13 @@ let score = 0;
 let questionNo = 0;
 let globcrc = "";
 let room = null;
-
+let avail;
 sock.on("msg", function(msg) {
     console.log(msg);
+});
+
+sock.on("available", function(data){
+    avail = data;
 });
 
 sock.on("hostDisconnect", function(msg) {
@@ -41,7 +59,6 @@ sock.on("hostDisconnect", function(msg) {
 sock.on("question", function(data){
     question = data;
     nextQuestion();
-    console.log(question.question);
 });
 
 sock.on("correct", function(data){
@@ -95,6 +112,8 @@ function load() {
     document.getElementById("waiting").style.display ="none";
     document.getElementById("disconnect").style.display ="none";
 
+    qrRoom("room","room");
+
 
 }
 
@@ -102,16 +121,53 @@ document.addEventListener("DOMContentLoaded", function() {
     load();
 });
 
-function joinRoom() {
 
+function checkRoom() {
+    let rc = document.getElementById("room").value.trim();
+    let nm = document.getElementById("name").value.trim();
+	if(rc == "" || nm =="") {
+		alert("Error! Please enter a room code and name to continue.");
+        document.getElementById("room").value = "";
+        document.getElementById("name").value = "";
+		return;
+    } 
+
+    sock.emit("checkRoom", document.getElementById("room").value);
+
+    if(typeof window.orientation !== "undefined") {
+        setTimeout(function(){
+            //Timeout function to ensure that we have recieved a response from the server before executing the next block of code.
+            if(avail) {
+                joinRoom();
+            } else {
+                alert("The room you entered does not exist. Remember room codes are case sensitive and may include spaces.");
+                return;
+            }
+            
+        },2000);
+    } else {
+        setTimeout(function(){
+            //Timeout function to ensure that we have recieved a response from the server before executing the next block of code.
+            if(avail) {
+                joinRoom();
+            } else {
+                alert("The room you entered does not exist. Remember room codes are case sensitive and may include spaces.");
+                return;
+            }
+            
+        },1000);
+    }
+    
+
+}
+
+function joinRoom() {
     let room = (document.getElementById("room").value).toString();
     let name = (document.getElementById("name").value).toString();
     sock.emit("room", [room, name]);
     document.getElementById("config").style.display ="none";
     document.getElementById("join").style.display ="none";
     document.getElementById("waiting").style.display ="";
-
-
 }
 
 function nextQuestion(){
@@ -119,8 +175,6 @@ function nextQuestion(){
     document.getElementById("waiting").style.display = "none";
 
     document.getElementById("answers").innerHTML = "";
-    //sock.emit("question", [questions[0], room]);
-    
     
     let inc = question.incorrect_answers;
     let crc = question.correct_answer;

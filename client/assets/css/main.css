@@ -27,6 +27,10 @@ html, body {
     margin-top: 5%;
 }
 
+#roomCode {
+    height: 175px;
+}
+
 #restart{
     text-align: center;
     font-size:28px;

@@ -9,7 +9,8 @@ let room = null;
 let noOfplayers = null;
 let ready = 0;
 let players = {};
-
+let avail;
+let gameState = false;
 function getQ (url) {
 	
 	var Httpreq = new XMLHttpRequest();
@@ -37,6 +38,10 @@ sock.on("players", function(data){
 	//console.log(noOfplayers);
 });
 
+sock.on("available", function(data){
+    avail = data;
+});
+
 sock.on("joined", function(data){
 	//console.log(data[0] + " " + data[1]);
 	players[data[0]] = data[1];
@@ -53,18 +58,28 @@ sock.on("ans", function(data){
 });
 
 sock.on("dc", function(data){
-
-	document.getElementById("q").innerHTML = "";
-    document.getElementById("answers").innerHTML = "";
-	document.getElementById("disconnect").style.display ="";
-	document.getElementById("disconnect").innerHTML = players[data] + " has disconnected! Game Over."
-    let selection = document.createElement("DIV");
-    let txt = document.createTextNode("Main Menu");
-    selection.appendChild(txt);
-    selection.setAttribute("onClick",'location.href="index.html"');
-    selection.setAttribute("class","option");
-    selection.setAttribute("id","restart");
-    document.getElementById("answers").appendChild(selection); 
+	if(gameState) {
+		document.getElementById("roomCode").style.display = "none";
+		document.getElementById("waiting").style.display = "none";
+		document.getElementById("lobby").style.display = "none";
+		document.getElementById("begin").style.display = "none";
+		
+		document.getElementById("q").innerHTML = "";
+		document.getElementById("answers").innerHTML = "";
+		document.getElementById("disconnect").style.display ="";
+		document.getElementById("disconnect").innerHTML = players[data] + " has disconnected! Game Over."
+		let selection = document.createElement("DIV");
+		let txt = document.createTextNode("Main Menu");
+		selection.appendChild(txt);
+		selection.setAttribute("onClick",'location.href="index.html"');
+		selection.setAttribute("class","option");
+		selection.setAttribute("id","restart");
+		document.getElementById("answers").appendChild(selection); 
+	} else {
+		let h = document.getElementById("lobby").innerHTML;
+		let nh = h.replace(("<br>"  + players[data]), "");
+		document.getElementById("lobby").innerHTML = nh;
+	}
 
 });
 
@@ -73,6 +88,7 @@ function load() {
 	document.getElementById("waiting").style.display ="none";
 	document.getElementById("disconnect").style.display ="none";
 	document.getElementById("lobby").style.display = "none";
+	document.getElementById("roomCode").style.display = "none";
     let catUrl = "https://opentdb.com/api_category.php";
 	let catObj = JSON.parse(getQ(catUrl));
 	let categories = catObj.trivia_categories;
@@ -104,6 +120,28 @@ document.addEventListener("DOMContentLoaded", function() {
     load();
 });
 
+function checkRoom() {
+    let rc = document.getElementById("room").value.trim();
+	if(rc == "") {
+		alert("Error! Please enter a room code to continue.");
+        document.getElementById("room").value = "";
+		return;
+    } 
+
+    sock.emit("checkRoom", document.getElementById("room").value);
+
+    setTimeout(function(){
+        //Timeout function to ensure that we have recieved a response from the server before executing the next block of code.
+        if(!avail) {
+           gameConfig();
+        } else {
+            alert("The room you entered already exists. Please enter another code. Remember room codes are case sensitive and may include spaces.");
+            return;
+        }
+        
+    },1000);
+}
+
 
 
 function gameConfig() {
@@ -111,10 +149,11 @@ function gameConfig() {
 	let noQ = (document.getElementById("noq").value).toString();
 	let cat = (document.getElementById("cat").value).toString();
     let dif = (document.getElementById("dif").value).toString();
+	
 	room = (document.getElementById("room").value).toString();
     document.getElementById("config").style.display = "none"; 
     document.getElementById("start").style.display = "none";
-    sock.emit("room", [room, name]);
+    sock.emit("hostConnect", [room, name]);
 
 	let gameURL = "";
 	if((cat == "" && dif == "")) {
@@ -128,19 +167,22 @@ function gameConfig() {
 
 	}
 
-	//console.log(gameURL);
+
 	obj = JSON.parse(getQ(gameURL));
 	questions = obj.results;
+	
+	//https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Example
+	document.getElementById("waiting").innerHTML = "Room Code: " + room + " <br> Go to https://alingam-quizdemo.herokuapp.com/join.html";
+	let roomInfo = "https://alingam-quizdemo.herokuapp.com/join.html?room=" + room; 
+	let qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + roomInfo;
 
-   // console.log(questions[0].question);
-    document.getElementById("waiting").innerHTML = "Room Code: " + room + " <br> Go to https://alingam-quizdemo.herokuapp.com/join.html";
-    document.getElementById("waiting").style.display ="";
+
+	document.getElementById("code").setAttribute("src",qr);
+	document.getElementById("waiting").style.display ="";
+	document.getElementById("roomCode").style.display ="";
 	document.getElementById("begin").style.display ="";
 	document.getElementById("lobby").style.display = "";
 	document.getElementById("restart").style.display = "none";
-    
-
-
 }
 
 function nextQuestion(){
@@ -237,7 +279,9 @@ function beginGame() {
 			document.getElementById("begin").style.display = "none";
 			document.getElementById("lobby").style.display = "none";
 			document.getElementById("waiting").style.display = "none";
+			document.getElementById("roomCode").style.display ="none";
 			sock.emit("close", room);
+			gameState = true;
 			nextQuestion();
 		} else {
 			alert("You need atleast 1 player to start the game.")

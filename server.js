@@ -17,13 +17,28 @@ let clients = {};
 let rooms = {};
 let hosts = {};
 let userRoom = {};
-
+let roomAvail;
 
 io.on('connection', function(sock){
     
+    sock.on("hostConnect", function(info){
+        if(!findRooms(info[0])) {
+            sock.join(info[0]);
+            clients[sock.id] = info[1];
+            rooms[info[0]] = true;
+            hosts[info[0]] = sock.id;
+            userRoom[sock.id] = info[0];
+
+            console.log(clients[sock.id] + " joined " + info[0]);  
+        } else {
+            console.log("Lobby Already exists");
+        }
+    });
+    
+    
     sock.on("room", function(info){
         
-       if(!rooms.hasOwnProperty(info[0])) {
+     /*  if(!rooms.hasOwnProperty(info[0])) {
             sock.join(info[0]);
             clients[sock.id] = info[1];
             rooms[info[0]] = true;
@@ -45,8 +60,37 @@ io.on('connection', function(sock){
                 io.emit("false", "cannot connect");
                 console.log("failed connection");
             }
-        } 
+        } */
+        console.log(findRooms(info[0]));
+        if(findRooms(info[0])) {
+            if(rooms[info[0]] == true) {
+                sock.join(info[0]);
+                clients[sock.id] = info[1];
+                rooms[info[0]] = true;
+                userRoom[sock.id] = info[0];
+    
+                io.to(hosts[info[0]]).emit("joined", [sock.id, info[1]]);
+                
+                console.log(clients[sock.id] + " joined " + info[0]);                
+            } else {
+                io.emit("false", "cannot connect");
+                console.log("failed connection");
+            }
+        } else {
+          console.log("Failed to connect: Room doesnt exist")
+        }
 
+
+    });
+
+    sock.on("checkRoom", function(data) {
+        if(findRooms(data)) {
+            console.log("Available");
+            io.emit("available", true);
+        } else {
+            console.log("Unavailable");
+            io.emit("available", false);
+        }
     });
 
     sock.on("noOfPlayers", function(data){
@@ -105,13 +149,13 @@ io.on('connection', function(sock){
         if(sock.id == h) {
             console.log("Host " + clients[sock.id] + " Disconnected");
             io.in(userRoom[sock.id]).emit("hostDisconnect", "Host has disconnected");
-
+            delete rooms[r];
+            delete hosts[r];
         }
 
         delete userRoom[sock.id];
         delete clients[sock.id];
-        delete rooms[r];
-        delete hosts[r];
+
     });
 
     
@@ -125,3 +169,18 @@ server.on("error", function(err) {
 
 
 server.listen(process.env.PORT || 5000);
+
+function findRooms(value) {
+    let v = false;
+    let y = Object.keys(rooms);
+    y.forEach(function(prop) {
+       // io.to(prop).emit("finish", data[prop]);
+       console.log(prop);
+        if(prop == value) {
+           v = true;
+        }
+    });
+
+    return v;
+    
+}
