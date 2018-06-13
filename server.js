@@ -21,7 +21,7 @@ let roomAvail;
 
 io.on('connection', function(sock){
     
-    console.log(sock.id);
+   
     sock.on("hostConnect", function(info){
         console.log(typeof info);
         if(!findRooms(info[0])) {
