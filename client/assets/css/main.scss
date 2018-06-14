@@ -1,0 +1,87 @@
+
+@import "../bulma/sass/utilities/initial-variables";
+@import "../bulma/sass/utilities/functions";
+
+
+
+$title-color: black;
+body {
+    background: $turquoise;
+    height: 100vh;
+}
+
+a:link {
+    color: rgb(45, 190, 118);
+}
+
+a:visited {
+    color: blue;
+}
+
+a:hover {
+    color: hotpink;
+}
+
+a:active {
+    color: blue;
+}
+
+#game{
+    background: $cyan;
+    border-radius: 8px;
+    border: solid white 6px;
+    padding: 10px;
+}
+
+#options {
+    width: 75%;
+    margin: 0 auto;
+}
+
+#welcome {
+    padding: 5px;
+    font-size: 28px;
+    color: white;
+}
+
+#content {
+    padding-top: 50px;
+}
+
+#qrCode {
+    padding: 5px;
+    font-size: 28px;
+    color: white;
+}
+
+#lobby {
+    padding: 5px;
+    font-size: 28px;
+    color: white;
+}
+
+
+
+@media only screen and (max-width: 600px) {
+    #welcome {
+        font-size: 15px;
+    }
+
+    #options {
+        width: 95%;
+        margin: 0 auto;
+    }
+
+    #content {
+        padding: 2%;
+        padding-top: 30px;
+        
+    }
+
+    #qrCode {
+        font-size: 15px; 
+    }
+}
+
+@import "../bulma/bulma.sass";
+

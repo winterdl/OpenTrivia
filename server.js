@@ -21,7 +21,7 @@ let roomAvail;
 
 io.on('connection', function(sock){
     
-    console.log(sock.id);
+   
     sock.on("hostConnect", function(info){
         console.log(typeof info);
         if(!findRooms(info[0])) {
@@ -99,6 +99,19 @@ io.on('connection', function(sock){
         }
     });
 
+    sock.on("checkName", function(data) {
+        let y = Object.keys(clients);
+        y.forEach(function(prop) {
+            if(clients[prop] == data[0]) {
+                io.to(data[1]).emit("nameAvailable", false);
+            } else {
+                io.to(data[1]).emit("nameAvailable", true);                
+            }
+
+		});
+
+    });
+
     sock.on("noOfPlayers", function(data){
 
         let no = io.sockets.adapter.rooms[data].length;
@@ -111,7 +124,7 @@ io.on('connection', function(sock){
     });
 
     sock.on("question", function(data){
-        io.in(data[1]).emit("question", data[0]);
+        io.in(data[1]).emit("question", [data[0], data[2]]);
     });
 
     sock.on("answer", function(data){
