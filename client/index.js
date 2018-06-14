@@ -55,7 +55,6 @@ function updateLoad() {
 
 sock.on("players", function(data){
 	noOfplayers = data - 1;
-	//console.log(noOfplayers);
 });
 
 sock.on("available", function(data){
@@ -63,35 +62,23 @@ sock.on("available", function(data){
 });
 
 sock.on("joined", function(data){
-	//console.log(data[0] + " " + data[1]);
 	players[data[0]] = data[1];
 	score[data[0]] = 0;
 	document.getElementById("lobby").innerHTML += "<br>" + data[1];
 });
 
 sock.on("ans", function(data){
-	//console.log(data[1]);
 	checkAns(data);
 });
 
 sock.on("dc", function(data){
 	if(gameState) {
-		document.getElementById("roomCode").style.display = "none";
-		document.getElementById("waiting").style.display = "none";
+		sock.disconnect();
+		document.getElementById("roomCode").style.display = "none";	
 		document.getElementById("lobby").style.display = "none";
-		document.getElementById("begin").style.display = "none";
-		
-		document.getElementById("q").innerHTML = "";
+		document.getElementById("msg").innerHTML = players[data] + " has disconnected! Game Over.";
 		document.getElementById("answers").innerHTML = "";
-		document.getElementById("disconnect").style.display ="";
-		document.getElementById("disconnect").innerHTML = players[data] + " has disconnected! Game Over."
-		let selection = document.createElement("DIV");
-		let txt = document.createTextNode("Main Menu");
-		selection.appendChild(txt);
-		selection.setAttribute("onClick",'location.href="index.html"');
-		selection.setAttribute("class","option");
-		selection.setAttribute("id","restart");
-		document.getElementById("answers").appendChild(selection); 
+		document.getElementById("endContainer").style.display = "";
 	} else {
 		let h = document.getElementById("lobby").innerHTML;
 		let nh = h.replace(("<br>"  + players[data]), "");
@@ -108,6 +95,8 @@ document.addEventListener("DOMContentLoaded", function() {
 	document.getElementById("beginContainer").style.display = "none"; 
 	document.getElementById("room-help").style.display = "none"; 
 	document.getElementById("answers").style.display = "none";
+	document.getElementById("endContainer").style.display = "none";
+	document.getElementById("resultContainer").style.display = "none";
 	
     let catUrl = "https://opentdb.com/api_category.php";
 	let catObj = JSON.parse(getQ(catUrl));
@@ -171,12 +160,6 @@ function gameConfig() {
 	let cat = (document.getElementById("cat").value).toString();
     let dif = (document.getElementById("dif").value).toString();
 	
-    room = (document.getElementById("roomCode").value).toString();
-    document.getElementById("welcome").style.display ="";
-    document.getElementById("options").style.display = "none"; 
-    document.getElementById("play").style.display = "none";
-    sock.emit("hostConnect", [room, name]);
-
 	let gameURL = "";
 	if((cat == "" && dif == "")) {
 		gameURL = "https://opentdb.com/api.php?amount=" + noQ;
@@ -192,17 +175,31 @@ function gameConfig() {
 
 	obj = JSON.parse(getQ(gameURL));
 	questions = obj.results;
+
+	if(obj.response_code == 0) {
+		
+		document.getElementById("welcome").style.display ="";
+		document.getElementById("options").style.display = "none"; 
+		document.getElementById("play").style.display = "none";
+		document.getElementById("resultContainer").style.display="none";
+
+		room = (document.getElementById("roomCode").value).toString();
+		sock.emit("hostConnect", [room, name]);
+		document.getElementById("msg").innerHTML = "Room Code: " + room + " <br> Go to <a href='https://alingam-quizdemo.herokuapp.com/join.html'>https://alingam-quizdemo.herokuapp.com/join.html</a>";
+		let roomInfo = "https://alingam-quizdemo.herokuapp.com/join.html?room=" + room; 
+		let qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + roomInfo;
+
+
+		document.getElementById("code").setAttribute("src",qr);
+		document.getElementById("qrCode").style.display = "";
+		document.getElementById("lobby").style.display = "";   
+		document.getElementById("beginContainer").style.display = ""; 		
+	} else if(obj.response_code == 1) {
+		document.getElementById("resultContainer").style.display="";
+		return;
+	}
 	
-	//https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=Example
-	document.getElementById("msg").innerHTML = "Room Code: " + room + " <br> Go to <a href='https://alingam-quizdemo.herokuapp.com/join.html'>https://alingam-quizdemo.herokuapp.com/join.html</a>";
-	let roomInfo = "https://alingam-quizdemo.herokuapp.com/join.html?room=" + room; 
-	let qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + roomInfo;
-
-
-    document.getElementById("code").setAttribute("src",qr);
-	document.getElementById("qrCode").style.display = "";
-	document.getElementById("lobby").style.display = "";   
-	document.getElementById("beginContainer").style.display = "";       
+      
 }
 
 function beginGame() {
@@ -228,18 +225,21 @@ function nextQuestion(){
 
 	if(questions.length > 0) {
 		ready = 0;
-		document.getElementById("play").style.display = "none";
-		document.getElementById("options").style.display = "none";
-		document.getElementById("answers").style.display = "";
-		document.getElementById("msg").style.display = "";
-		sock.emit("question", [questions[0], room]);
-		
-		
 		let inc = questions[0].incorrect_answers;
 		let crc = questions[0].correct_answer;
 		globcrc = crc;
 		let options = inc.concat(crc);
 		shuffleArray(options);
+
+		document.getElementById("play").style.display = "none";
+		document.getElementById("options").style.display = "none";
+		document.getElementById("answers").style.display = "";
+		document.getElementById("msg").style.display = "";
+		document.getElementById("answers").innerHTML = "";
+		sock.emit("question", [questions[0], room, options]);
+		
+		
+
 		questionNo = questionNo + 1;
 		document.getElementById("msg").innerHTML = questionNo + ") " + questions[0].question;
 	
@@ -248,32 +248,50 @@ function nextQuestion(){
 			let txt = document.createTextNode(options[i]);
 			selection.appendChild(txt);
 			selection.setAttribute("value",options[i]);
-			selection.setAttribute("class","notification is-primary ans");
+			selection.setAttribute("class","notification is-primary");
 			document.getElementById("answers").appendChild(selection);
 		} 
 	} else {
 
 		
 		document.getElementById("answers").innerHTML = "";
-		document.getElementById("q").innerHTML = "";
+		document.getElementById("msg").innerHTML = "Game Scores:";
 		let y = Object.keys(score);
 		sock.emit("end", score);
 		y.forEach(function(prop) {
-			//console.log(prop, " = ", score[prop]);
 			let selection = document.createElement("DIV");
 			let txt = document.createTextNode(players[prop] + " Score: " + score[prop]);
 			selection.appendChild(txt);
-			selection.setAttribute("class","modifiers");
+			selection.setAttribute("class","notification is-primary");
 			document.getElementById("answers").appendChild(selection);
 		});
 
-		let selection = document.createElement("DIV");
-		let txt = document.createTextNode("Main Menu");
-		selection.appendChild(txt);
-		selection.setAttribute("onClick",'location.href="index.html"');
-		selection.setAttribute("class","option");
-		selection.setAttribute("id","restart");
-		document.getElementById("answers").appendChild(selection); 
-
+		document.getElementById("endContainer").style.display = "";
 	}
+}
+
+function checkAns(data) {
+
+	let ans = data[1];
+	let playerID = data[0];
+
+	if(ans == globcrc) {
+		score[playerID] += 1;
+		ready += 1;
+		sock.emit("correct", [playerID, score[playerID], ans]);
+
+	} else {
+		ready += 1;
+		sock.emit("incorrect", [playerID, score[playerID], globcrc]);
+	}
+
+//	console.log(score[0]);
+	if(ready == noOfplayers) {
+		questions.shift();
+		setTimeout(function(){
+			nextQuestion()
+		},1000);
+	}
+
+
 }

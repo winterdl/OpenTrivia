@@ -43,9 +43,6 @@ a:active {
   font-size: 28px;
   color: white; }
 
-.ans:hover {
-  background-color: red; }
-
 @media only screen and (max-width: 600px) {
   #welcome {
     font-size: 15px; }

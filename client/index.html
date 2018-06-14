@@ -4,6 +4,7 @@
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <title>Open Trivia!</title>
+      <link rel="shortcut icon" type="image/x-icon" href="./assets/img/favicon.ico"/>
       <link rel="stylesheet" href="./assets/bulma/css/bulma.css">
       <link rel="stylesheet" href="./assets/css/main.css">
       <link rel="stylesheet" href="./assets/css/extra.css">
@@ -95,7 +96,9 @@
                                     </div>
                                 </div>  
                             </div>
-
+                            <div id="resultContainer" class="has-text-centered">
+                                <p id="result-help" class="help is-danger">There are not enough questions in your chosen category and/or difficulty. Please select another.</p>  
+                            </div>
                             <div class="field">
                                 <div class="control">
                                     <button id="play" class="button is-primary is-fullwidth" onclick="checkRoom()">Play</button>
@@ -120,6 +123,10 @@
 
                         </div>
 
+                        <div id="endContainer" class="has-text-centered">
+                            <a href="index.html"><button id="menu" class="button is-primary" >Main Menu</button></a>
+                        </div>
+
                     </div>
                 </div>
                 
@@ -137,7 +144,7 @@
 
                             <section>
                                 <p>
-                                    A small party quiz game which involves a host device which acts as the main quiz screen and other devices such as 
+                                    A small party quiz game demo which involves a host device which acts as the main quiz screen and other devices such as 
                                     phones which act as players.
                                     <br>
                                     Demo made with Javascript using <a href="https://expressjs.com/" target="_blank">Express</a> 

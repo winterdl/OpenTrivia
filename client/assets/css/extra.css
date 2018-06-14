@@ -26,5 +26,10 @@
 }
 
 .ans:hover {
-    background-color: red;
+    background-color:hsl(348, 100%, 61%);
+    cursor: pointer;
+}
+
+#endContainer {
+    padding: 5px;
 }
