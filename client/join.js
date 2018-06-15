@@ -207,12 +207,8 @@ function joinRoom() {
 function nextQuestion(){
 
     document.getElementById("answers").innerHTML = "";
-    
-    let inc = question.incorrect_answers;
-    let crc = question.correct_answer;
-    globcrc = crc;
     questionNo = questionNo + 1;
-    document.getElementById("msg").innerHTML = questionNo + ") " + question.question;
+    document.getElementById("msg").innerHTML = questionNo + ") " + question;
 
     for(let i = 0; i < options.length; i++) {
         let selection = document.createElement("DIV");

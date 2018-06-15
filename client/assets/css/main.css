@@ -43,6 +43,10 @@ a:active {
   font-size: 28px;
   color: white; }
 
+#players {
+  padding-top: 25px;
+  color: white; }
+
 @media only screen and (max-width: 600px) {
   #welcome {
     font-size: 15px; }
