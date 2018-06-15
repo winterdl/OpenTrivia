@@ -1,7 +1,7 @@
 const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
-
+const https = require('https');
 
 const app = express();
 
@@ -18,7 +18,7 @@ let rooms = {};
 let hosts = {};
 let userRoom = {};
 let roomAvail;
-
+let games = [];
 io.on('connection', function(sock){
     
    
@@ -203,3 +203,39 @@ function findRooms(value) {
     return v;
     
 }
+
+/*
+function configureGame(noQ, cat, dif, id, roomName, players) {
+    let gameURL = "";
+	if((cat == "" && dif == "")) {
+		gameURL = "https://opentdb.com/api.php?amount=" + noQ;
+	} else if(cat == "" && dif != "") {
+		gameURL = "https://opentdb.com/api.php?amount=" + noQ + "&difficulty=" + dif;
+	} else if(cat != "" && dif == "") {
+		gameURL ="https://opentdb.com/api.php?amount=" + noQ + "&category=" + cat;
+	} else {
+		gameURL = "https://opentdb.com/api.php?amount=" + noQ + "&category=" + cat + "&difficulty=" + dif;
+
+	}
+
+    let questions;
+    https.get(gameURL, (response) => {
+        response.setEncoding('utf8');
+        response.on('data', function (body) {
+            let obj = JSON.parse(body)
+            questions = obj.results;
+
+        });
+    });
+
+    let game = {
+
+        questions: questions,
+        host: id,
+        room: roomName,
+        players: players
+    }
+
+
+} */
+

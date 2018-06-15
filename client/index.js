@@ -73,12 +73,21 @@ sock.on("ans", function(data){
 
 sock.on("dc", function(data){
 	if(gameState) {
-		sock.disconnect();
-		document.getElementById("roomCode").style.display = "none";	
-		document.getElementById("lobby").style.display = "none";
-		document.getElementById("msg").innerHTML = players[data] + " has disconnected! Game Over.";
-		document.getElementById("answers").innerHTML = "";
-		document.getElementById("endContainer").style.display = "";
+		if(noOfplayers == 1) {
+			sock.disconnect();
+			document.getElementById("roomCode").style.display = "none";	
+			document.getElementById("lobby").style.display = "none";
+			document.getElementById("msg").innerHTML = "All players have disconnected! Game Over.";
+			document.getElementById("answers").innerHTML = "";
+			document.getElementById("endContainer").style.display = "";
+		} else{
+			noOfplayers = noOfplayers - 1;
+			console.log(noOfplayers);
+			delete players[data];
+			delete score[data];
+			changeQuestion();
+		}
+
 	} else {
 		let h = document.getElementById("lobby").innerHTML;
 		let nh = h.replace(("<br>"  + players[data]), "");
@@ -185,7 +194,7 @@ function gameConfig() {
 
 		room = (document.getElementById("roomCode").value).toString();
 		sock.emit("hostConnect", [room, name]);
-		document.getElementById("msg").innerHTML = "Room Code: " + room + " <br> Go to <a href='https://alingam-quizdemo.herokuapp.com/join.html'>https://alingam-quizdemo.herokuapp.com/join.html</a>";
+		document.getElementById("msg").innerHTML = "Room Code: " + room + " <br> Go to <a href='https://alingam-quizdemo.herokuapp.com/join.html' target='_blank'>https://alingam-quizdemo.herokuapp.com/join.html</a>";
 		let roomInfo = "https://alingam-quizdemo.herokuapp.com/join.html?room=" + room; 
 		let qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" + roomInfo;
 
@@ -236,7 +245,7 @@ function nextQuestion(){
 		document.getElementById("answers").style.display = "";
 		document.getElementById("msg").style.display = "";
 		document.getElementById("answers").innerHTML = "";
-		sock.emit("question", [questions[0], room, options]);
+		sock.emit("question", [questions[0].question, room, options]);
 		
 		
 
@@ -253,18 +262,37 @@ function nextQuestion(){
 		} 
 	} else {
 
-		
+		gameState = false;
 		document.getElementById("answers").innerHTML = "";
 		document.getElementById("msg").innerHTML = "Game Scores:";
 		let y = Object.keys(score);
 		sock.emit("end", score);
-		y.forEach(function(prop) {
+		
+		let sortableScore = [];
+
+		for (let s in score) {
+			sortableScore.push([s, score[s]]);
+		}
+
+		sortableScore.sort(function(a, b){
+			return a[1] - b[1];
+		});
+		
+		sortableScore.reverse();
+
+		for(let i = 0; i < sortableScore.length; i++) {
 			let selection = document.createElement("DIV");
-			let txt = document.createTextNode(players[prop] + " Score: " + score[prop]);
+			let txt; 
+			if(i == 0) {
+				txt = document.createTextNode("Winner! - " + " " + players[sortableScore[i][0]] + " score: " + sortableScore[i][1]);
+			} else {
+				txt = document.createTextNode((i+1) + ") " + players[sortableScore[i][0]] + " score: " + sortableScore[i][1]);				
+			}
+			
 			selection.appendChild(txt);
 			selection.setAttribute("class","notification is-primary");
 			document.getElementById("answers").appendChild(selection);
-		});
+		}
 
 		document.getElementById("endContainer").style.display = "";
 	}
@@ -286,12 +314,16 @@ function checkAns(data) {
 	}
 
 //	console.log(score[0]);
+	changeQuestion();
+
+
+}
+
+function changeQuestion() {
 	if(ready == noOfplayers) {
 		questions.shift();
 		setTimeout(function(){
 			nextQuestion()
 		},1000);
 	}
-
-
 }
