@@ -1,8 +1,8 @@
 module.exports = {
-
+ 
     // Checks whether an JS Object contains an element with the provided key.
     doesExist: function(value, obj) {
-        if(obj[value == null]) {
+        if(obj[value] == null) {
             return false
         } else return true
     },
@@ -25,35 +25,42 @@ module.exports = {
         }
         return player;
     },
-    
-    // Removes a player from a running game on client disconnect
-    removePlayer: function(sockedID, playerList){
+
+    // Removes a player from a running game on client disconnect    
+    removePlayer: function(socketId, playerList) {
         let remainingPlayers = [];
-        for(player in playerList) {
-            if(player.id != socketID) {
-                remainingPlayers.push[player]
+        let name ="";
+       for (let i = 0; i < playerList.length; i++) {
+            if(playerList[i].id == socketId) {
+                name = playerList[i].username;
+                
+            } else {
+                remainingPlayers.push(playerList[i]);
             }
-        }
-        return remainingPlayers;
+        } 
+
+        return [remainingPlayers, name];
     },
 
     // Pass in a socketID to determine whether the connected client is a PLAYER or HOST type.
-    getClientType: function(socketID, activeGames){
-        for(let game in activeGames) {
-            if(game.host == socketID){
-                return ["host", game]
-            } else {
-                let players = activeGames[game].players;
-                for(player in players){
-                    if(player.id == socketID){
-                        return ["player", game, player];
-                    }
+    getClientType: function(socketId, gameList) {
+        for(let game in gameList) {
+            if(gameList[game].host == socketId) {
+                return ["host", game];
+            }
+        }
+
+        for(let game in gameList) {
+            let players = gameList[game].players;
+            for(player in players) {
+                if(players[player].id == socketId) {
+                    return ["player", game]; 
                 }
             }
         }
-        
-    }
+    },
 
 
 
-}
+    
+};
