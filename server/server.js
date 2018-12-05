@@ -28,7 +28,6 @@ io.on("connection", (socket) => {
                 games.addGame(socket.id, config.room, config.category, config.difficulty, config.questions);
                 socket.join(config.room);
                 socket.emit("roomCreated");
-                console.log(games.games);
             } else {
                 socket.emit("ERROR", {
                     code: "ROOMERROR",
@@ -45,6 +44,14 @@ io.on("connection", (socket) => {
 
     socket.on("joinRoom", (config) => {
         if(isValidString(config.name) && isValidString(config.room)) {
+            var g = games.getGameByRoom(config.room);
+            if(g && g.active) {
+                return socket.emit("ERROR", {
+                    code: "NAMEERROR",
+                    msg: `Cannot join room ${config.name}. Game has already started.`
+                });
+            }
+
             if(!games.checkRoomName(config.room)) {
                 if(games.checkUsername(config.room, config.name)) {
                     games.addPlayer(config.room, config.name, socket.id);
@@ -52,7 +59,6 @@ io.on("connection", (socket) => {
                     socket.emit("joinedRoom");
                     var game = games.getGameByRoom(config.room);
                     io.to(game.host).emit("PLAYER-CONNECTED", {name: config.name});
-                    console.log(games.players);
                 } else {
                     socket.emit("ERROR", {
                         code: "NAMEERROR",
@@ -75,18 +81,73 @@ io.on("connection", (socket) => {
 
     socket.on("startGame", () => {
         var roomName = games.getGameByHost(socket.id).room;
-        var fullQuestion = games.getCurrentQuestion(roomName);
-        var options = fullQuestion.incorrect_answers.concat(fullQuestion.correct_answer);
-        var shuffledOptions = shuffleArray(options);
-        var question = {
-            category: decodeURIComponent(fullQuestion.category),
-            type: fullQuestion.type,
-            question: decodeURIComponent(fullQuestion.question),
-            options: shuffledOptions
-        };
+        if(roomName) {
 
-        io.to(roomName).emit("newQuestion", question);
+            var players = games.getFromRoom(roomName);
+
+            if(players.length > 0) {
+
+                var question = setupQuestion(roomName);
+                games.getGameByHost(socket.id).active = true;
+                games.setWaiting(roomName);
+                io.to(roomName).emit("newQuestion", question);
+            } else {
+                socket.emit("ERROR", {
+                    code: "STARTERROR",
+                    msg: "Not enough players to start the game."
+                });
+            }
+
+
+        } else {
+            // Add error handling!
+        }
     });
+
+    socket.on("submitAnswer", (ans) => {
+        var player = games.getPlayerBySocket(socket.id);
+        if(player) {
+            var question = games.getCurrentQuestion(player.room);
+            console.log(decodeURIComponent(question.correct_answer), ans);
+            if(decodeURIComponent(question.correct_answer) === ans) {
+                var p = games.updateScore(socket.id, 1);
+                socket.emit("correctAnswer", p.score);
+            } else {
+                socket.emit("incorrectAnswer", {correct: question.correct_answer, score: player.score});
+            }
+
+            games.updateWaiting(player.room);
+
+            var waiting = games.getWaiting(player.room);
+
+            if(waiting === 0) {
+                var remaining = games.availableQuestions(player.room);
+                if(remaining === 1) {
+                    console.log(`${player.room} finished!`);
+                    var players = games.getFromRoom(player.room);
+                    var response = [];
+                    players.forEach((player) => {
+                        var p = {
+                            name: player.username,
+                            score: player.score
+                        };
+                        response.push(p);
+                    })
+                    io.to(player.room).emit("gameFinished", response);
+                } else {
+                    games.nextQuestion(player.room);
+                    var res = setupQuestion(player.room);
+                    games.setWaiting(player.room);
+                    io.to(player.room).emit("newQuestion", res);
+                }
+
+            };
+
+            
+        };
+    });
+
+    
     socket.on("disconnect", () => {
         var type = games.isHostOrPlayer(socket.id);
 
@@ -96,19 +157,47 @@ io.on("connection", (socket) => {
             players.forEach((player) => {
                 io.emit("HOST-DISCONNECT");
             });
-
-            console.log(games.games);
         } else if(type === "PLAYER") {
             var player = games.removePlayer(socket.id);
-            io.to(player.room).emit("PLAYER-DISCONNECT", {name: player.username, score: player.score});
-        }
+            var players = games.getFromRoom(player.room);
+            var game = games.getGameByRoom(player.room);
+            
+            if(game.active) {
+                if(players.length > 0) {
+                    games.setWaiting(player.room);
+                    io.to(player.room).emit("PLAYER-DISCONNECT", {name: player.username, score: player.score});
+                } else {
+                    var game = games.getGameByRoom(player.room);
+                    games.removeGame(game.host);
+                    var hostSocket = io.sockets.connected[game.host];
+                    hostSocket.leave(game.room);
+                    io.to(game.host).emit("ALL-DISCONNECT")
+                    console.log(games.games, "    ", games.players);
+                };
+            } else {
+                io.to(player.room).emit("PLAYER-DISCONNECT", {name: player.username, score: player.score});
+            };
+            
+        };
     })
 })
 
 
 
 
+function setupQuestion(roomName) {
+    var fullQuestion = games.getCurrentQuestion(roomName);
+    var options = fullQuestion.incorrect_answers.concat(fullQuestion.correct_answer);
+    var shuffledOptions = shuffleArray(options);
+    var question = {
+        category: decodeURIComponent(fullQuestion.category),
+        type: fullQuestion.type,
+        question: decodeURIComponent(fullQuestion.question),
+        options: shuffledOptions
+    };
 
+    return question;
+;}
 
 
 

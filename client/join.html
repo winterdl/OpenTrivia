@@ -12,13 +12,20 @@
     <body>
 
         <div class="section is-centered" id="main">
-            <h4 class="title is-4">Enter Room Name and Username and hit Play!</h4>
-            <input class="input is-info" type="text" placeholder="Room Name" value="dogs" id="roomName">
-            <input class="input is-info" type="text" placeholder="User Name" id="userName">
-            <h5 id="error"></h5>
-            <a class="button is-fullwidth is-primary" onclick="joinRoom()">Join!</a>
+                <a class="button is-primary is-loading">Loading</a>
         </div>
 
+        <script id="question-template" type="text/template">
+            <div id="question">
+                <h4>{{text}}</h4>
+            </div>
+        </script>
+
+        <script id="answers-template" type="text/template">
+            <div class="tile">
+                <a class="button is-fullwidth is-primary" onclick="sendAnswer(this)">{{option}}</a>
+            </div>
+        </script>
 
 
         <script id="lobby-template" type="text/template">
@@ -27,6 +34,17 @@
             </div>
         </script>
 
+        <script id="error-template" type="text/template">
+            <h5 id="error">{{msg}}<h5>
+        </script>
+
+        <script id="start-template" type="text/template">
+            <h4 class="title is-4">Enter Room Name and Username and hit Play!</h4>
+            <input class="input is-info" type="text" placeholder="Room Name" value="dogs" id="roomName">
+            <input class="input is-info" type="text" placeholder="User Name" value="Anushan" id="userName">
+            <h5 id="error"></h5>
+            <a class="button is-fullwidth is-primary" onclick="joinRoom()">Join!</a>
+        </script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="/js/libs/jquery-3.3.1.min.js"></script>
         <script src="/js/libs/mustache.js"></script>

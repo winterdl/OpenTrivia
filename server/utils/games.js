@@ -11,6 +11,7 @@ class GameManager {
         let game = {
             host: hostID,
             room: roomName,
+            active: false
         }
         this.games.push(game);
 
@@ -38,17 +39,42 @@ class GameManager {
 
     nextQuestion(room) {
         this.quizzes[room].qs.shift();
+        //console.log(this.quizzes[room].qs);
+
+    };
+
+    availableQuestions(room) {
+        return this.quizzes[room].qs.length;
     };
 
     setWaiting(room) {
         var val = this.getFromRoom(room).length;
         this.quizzes[room].waiting = val;
+        //console.log("waiting", val);
     };
 
     updateWaiting(room) {
         if(this.quizzes[room].waiting > 0) {
             this.quizzes[room].waiting -= 1;
         }
+        //console.log("updated waiting!");
+    };
+
+    getWaiting(room) {
+        return this.quizzes[room].waiting;
+    };
+
+    updateScore(socketID, points) {
+        var player = this.getPlayerBySocket(socketID);
+        if(player) {
+            var i = this.players.findIndex((p) => {
+                return p.id === socketID; 
+            });
+            this.players[i].score += points;
+        };
+        //console.log("Updated Score!");
+        return this.getPlayerBySocket(socketID);
+
     };
 
     addPlayer(room, name, socketID) {
@@ -70,6 +96,8 @@ class GameManager {
             this.games = this.games.filter((game) => {
                 return game.host != socketID;
             });
+
+            delete this.quizzes[game.room];
         };
 
         return game;
