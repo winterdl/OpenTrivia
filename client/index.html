@@ -3,167 +3,61 @@
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>Open Trivia!</title>
+      <title>Host | Open Trivia!</title>
       <link rel="shortcut icon" type="image/x-icon" href="./assets/img/favicon.ico"/>
       <link rel="stylesheet" href="./assets/bulma/css/bulma.css">
-      <link rel="stylesheet" href="./assets/css/main.css">
-      <link rel="stylesheet" href="./assets/css/extra.css">
       <link href="https://fonts.googleapis.com/css?family=Raleway:800|Roboto:500" rel="stylesheet">
-      <title>Hello World!</title>
     </head>
     
-    <div id="loadContainer">
-        <progress id="loadbar" class="progress is-primary" value="0" max="100">30%</progress>
-    </div>
-   
-    <body onload="updateLoad()">
-     
-            <section class="hero is-primary">
-                    <div class="hero-head">
-                      <nav class="navbar">
-                        <div class="container">
-                          <div class="navbar-brand">
-                            <a class="navbar-item" href="index.html">
-                              <h2 class="title is-3">Open Trivia!</h2>
-                            </a>
-                            <span class="navbar-burger burger" data-target="navbarMenuHeroA">
-                              <span></span>
-                              <span></span>
-                              <span></span>
-                            </span>
-                          </div>
-                          <div id="navbarMenuHeroA" class="navbar-menu">
-                            <div class="navbar-end">
-                              <a class="navbar-item" href="join.html" target="_blank">Join Game</a>
-                              <a class="navbar-item" onclick="aboutModal(0)">About</a>
-                            </div>
-                          </div>
-                        </div>
-                      </nav>
-                    </div>
-                </section>
+    <body>
 
-                <div id="content" class="">
-                    <div  class="container">
-                        <div id="game" class="container">
-                            <div id="welcome" class="has-text-centered">
-                                <h3 id="msg">Welcome to Open Trivia! Setup your game with the desired options below and hit <em>play</em> to invite players.</h3>
-                            </div>
-                        <div id="options" class="box">
-                            <div class="field">
-                                <label class="label is-small">Enter Room Code:</label>
-                                <div class="control">
-                                    <input id="roomCode" class="input is-info is-small" type="text" placeholder="Room code is case sensitive and can include spaces">
-                                </div>
-                                <p id="room-help" class="help is-danger">Room name not available please try again.</p>  
-                            </div>
-                            
-                                                                
-                            <div class="field">
-                                <label class="label is-small">How many questions do you want to play?</label>
-                                <div class="control is-expanded">
-                                    <div class="select is-fullwidth is-small is-info">
-                                        <select id="noQ">
-                                            <option value="10">10 Questions</option>
-                                            <option value="15">15 Questions</option>
-                                            <option value="20">20 Questions</option>
-                                        </select>
-                                    </div>
-                                </div>  
-                            </div>
+        <div class="section is-centered" id="main">
+            <h4 class="title is-4">Enter Room Name and hit Play!</h4>
+            <input class="input is-info" type="text" placeholder="Room Name" value="dogs" id="roomName">
+            <div class="select is-fullwidth is-primary">
+                    <select id="categories">
+                      <option>populating categories...</option>
+                    </select>
+            </div>
+            <div class="select is-fullwidth is-primary">
+                    <select id="difficulty">
+                        <option value="any">Any Difficulty</option>
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+            </div>
+            <div class="select is-fullwidth is-primary">
+                    <select id="number">
+                      <option value="5">5</option>
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                    </select>
+            </div>
+            <h5 id="error"></h5>
+            <a class="button is-fullwidth is-primary" onclick="createRoom()">Play!</a>
+        </div>
 
-                            <div class="field">
-                                <label class="label is-small">Pick a category:</label>
-                                <div class="control is-expanded">
-                                    <div class="select is-fullwidth is-small is-info">
-                                        <select id="cat">
-                                            <option value="">All Categories</option>
-                                        </select>
-                                    </div>
-                                </div>  
-                            </div>
 
-                            <div class="field">
-                                <label class="label is-small">Question Difficulty</label>
-                                <div class="control is-expanded">
-                                    <div class="select is-fullwidth is-small is-info">
-                                        <select id="dif">
-                                            <option value="">All Difficulties</option>
-                                            <option value="easy">Easy</option>
-                                            <option value="medium">Medium</option>
-                                            <option value="hard">Hard</option>
-                                        </select>
-                                    </div>
-                                </div>  
-                            </div>
-                            <div id="resultContainer" class="has-text-centered">
-                                <p id="result-help" class="help is-danger">There are not enough questions in your chosen category and/or difficulty. Please select another.</p>  
-                            </div>
-                            <div class="field">
-                                <div class="control">
-                                    <button id="play" class="button is-primary is-fullwidth" onclick="verifyData()">Play</button>
-                                </div>
-                            </div>
-                        </div>
 
-                        <div id="qrCode" class="has-text-centered">
-                            Or scan the code below. <br>
-                            <img id="code"></img>
-                        </div>
 
-                        <div id="lobby" class="has-text-centered">
-                            <u>Players:</u>
-                        </div>
-                        
-                        <div id="beginContainer" class="has-text-centered">
-                            <button id="begin" class="button is-primary" onclick="beginGame()">Begin</button>
-                        </div>
+        <script id="lobby-template" type="text/template">
+            <div id="lobby">
+                <h4 class="title is-4">{{text}}</h4>
+            </div>
+        </script>
+        
+        <script id="player-template" type="text/template">
+            <h4 id="p" class="subtitle is-4">{{player}}</h4>
+        </script>
 
-                        <div id="answers" class="has-text-centered">
+        <script id="option-template" type="text/template">
+            <option value="{{val}}">{{text}}</option>
+        </script>
 
-                        </div>
-
-                        <div id="endContainer" class="has-text-centered">
-                            <a href="index.html"><button id="menu" class="button is-primary" >Main Menu</button></a>
-                        </div>
-
-                    </div>
-                </div>
-                
-                <div id="about-modal" class="modal">
-                    <div class="modal-background"></div>
-                    <div class="modal-card">
-                        <header class="modal-card-head">
-                        <p class="modal-card-title">About</p>
-                        <button class="delete" aria-label="close" onclick="aboutModal(1)"></button>
-                        </header>
-                        <section class="modal-card-body">
-                            <div class="has-text-centered">
-                                <h2 class="title is-2"> Open Trivia!  <span> <h2 class="subtitle is-4"> by Anushan Lingam.</h2></span> </h2>
-                            </div>
-
-                            <section>
-                                <p>
-                                    A small party quiz game demo which involves a host device which acts as the main quiz screen and other devices such as 
-                                    phones which act as players.
-                                    <br>
-                                    Demo made with Javascript using <a href="https://expressjs.com/" target="_blank">Express</a> 
-                                    and <a href="https://nodejs.org/en/" target="_blank">Node.js</a> for the server and 
-                                    the <a href="https://bulma.io/" target="_blank">Bulma</a> CSS framework for the UI.
-                                    <br>
-                                    Trivia questions provided by the Opentdb API available <a href="https://opentdb.com/" target="_blank">here.</a>
-                                    <br>
-                                    Source code available on <a href="https://github.com/AnushanLingam/OpenTrivia" target="_blank">github.</a>
-                                </p>
-                            </section>
-                        </section>
-                        <footer class="modal-card-foot">
-                        <button class="button is-info is-fullwidth" onclick="aboutModal(1)">Close</button>
-                        </footer>
-                    </div>
-                </div>
-      
         <script src="/socket.io/socket.io.js"></script>
-        <script src="index.js"></script>
+        <script src="/js/libs/jquery-3.3.1.min.js"></script>
+        <script src="/js/libs/mustache.js"></script>
+        <script src="/js/index.js"></script>
     </body>
   </html>
